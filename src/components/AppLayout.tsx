@@ -4,9 +4,10 @@ import { LayoutContext } from '../context/LayoutContext'
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
 import { MobileBottomNav } from './MobileBottomNav'
+import { Outlet } from 'react-router-dom'
 
 interface AppLayoutProps {
-  children: ReactNode
+  children?: ReactNode
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
@@ -26,7 +27,9 @@ export function AppLayout({ children }: AppLayoutProps) {
               sidebarOpen ? 'md:ml-64' : 'md:ml-20'
             }`}
           >
-            <div className="h-full">{children}</div>
+            <div className="h-full">
+              {children ?? <Outlet />}
+            </div>
           </main>
         </div>
 

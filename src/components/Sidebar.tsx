@@ -1,9 +1,35 @@
 import { MENU_ITEMS } from '../config/menu'
 import { NavItem } from './NavItem'
 import { useLayout } from '../context/LayoutContext'
+import { useAuth } from '../hooks/useAuth'
 
 export function Sidebar() {
   const { sidebarOpen } = useLayout()
+  const { profile } = useAuth()
+
+  // Filter menu items by user's role
+  const filteredMenuItems = MENU_ITEMS.filter((item) => {
+    if (!item.allowedRoles) return true
+    if (!profile) return false
+    return item.allowedRoles.includes(profile.role)
+  })
+
+  // Get initials for profile name
+  const getInitials = (name?: string) => {
+    if (!name) return 'U'
+    return name
+      .split(' ')
+      .map((part) => part[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase()
+  }
+
+  // Format roles for visual display
+  const formatRole = (role?: string) => {
+    if (!role) return ''
+    return role.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+  }
 
   return (
     <>
@@ -25,7 +51,7 @@ export function Sidebar() {
         {/* Scrollable menu section */}
         <nav className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
           <div className={`p-4 space-y-1.5 ${!sidebarOpen ? 'py-6' : ''}`}>
-            {MENU_ITEMS.map((item) => (
+            {filteredMenuItems.map((item) => (
               <NavItem key={item.id} item={item} collapsed={!sidebarOpen} />
             ))}
           </div>
@@ -37,26 +63,21 @@ export function Sidebar() {
             !sidebarOpen ? 'justify-center' : 'gap-3.5'
           }`}
         >
-          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-slate-200 to-slate-300 flex-shrink-0 border border-slate-300/50 flex items-center justify-center text-slate-700 font-semibold text-xs">
-            AD
+          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-50 to-indigo-100 flex-shrink-0 border border-indigo-200 flex items-center justify-center text-indigo-650 font-semibold text-xs">
+            {getInitials(profile?.name)}
           </div>
           {sidebarOpen && (
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-slate-800 truncate">
-                Admin User
+                {profile?.name || 'User Profile'}
               </p>
-              <p className="text-xs text-slate-400 font-medium truncate">
-                admin@indigrocer.com
+              <p className="text-[10px] text-indigo-650 font-bold uppercase tracking-wider truncate">
+                {formatRole(profile?.role)}
               </p>
             </div>
           )}
         </div>
       </aside>
-
-      {/* Backdrop for mobile when sidebar might be open */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 bg-black/50 md:hidden z-20" />
-      )}
     </>
   )
 }

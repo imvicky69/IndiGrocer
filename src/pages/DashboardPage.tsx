@@ -1,6 +1,48 @@
-import { School, Receipt, DollarSign, BarChart3, ArrowUpRight } from 'lucide-react'
+import { School, Receipt, DollarSign, BarChart3, ArrowUpRight, CheckCircle2, XCircle } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { fetchSchoolDashboardStats } from '../lib/db'
 
 export function DashboardPage() {
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ['dashboard-stats'],
+    queryFn: fetchSchoolDashboardStats
+  })
+
+  const statCards = [
+    { 
+      title: 'Total Schools', 
+      value: isLoading ? '...' : stats?.total.toString() || '0', 
+      change: 'Registered Institutions', 
+      type: 'info', 
+      icon: School, 
+      color: 'bg-indigo-50 text-indigo-650 border-indigo-100/50' 
+    },
+    { 
+      title: 'Active Schools', 
+      value: isLoading ? '...' : stats?.active.toString() || '0', 
+      change: 'Fully Operating', 
+      type: 'increase', 
+      icon: CheckCircle2, 
+      color: 'bg-emerald-50 text-emerald-650 border-emerald-100/50' 
+    },
+    { 
+      title: 'Inactive Schools', 
+      value: isLoading ? '...' : stats?.inactive.toString() || '0', 
+      change: 'Deactivated / Archived', 
+      type: 'decrease', 
+      icon: XCircle, 
+      color: 'bg-rose-50 text-rose-650 border-rose-100/50' 
+    },
+    { 
+      title: 'Billing Allocations', 
+      value: '156', 
+      change: 'Active Distributions', 
+      type: 'info', 
+      icon: BarChart3, 
+      color: 'bg-sky-50 text-sky-600 border-sky-100/50' 
+    },
+  ]
+
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto w-full animate-slide-in">
       <div className="mb-8">
@@ -10,17 +52,12 @@ export function DashboardPage() {
 
       {/* Dashboard Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[
-          { title: 'Total Schools', value: '24', change: '+2.5%', type: 'increase', icon: School, color: 'bg-indigo-50 text-indigo-600 border-indigo-100/50' },
-          { title: 'Active Bills', value: '3', change: 'Pending Verification', type: 'neutral', icon: Receipt, color: 'bg-amber-50 text-amber-600 border-amber-100/50' },
-          { title: 'Revenue', value: '$124.5K', change: '+12.3%', type: 'increase', icon: DollarSign, color: 'bg-emerald-50 text-emerald-600 border-emerald-100/50' },
-          { title: 'Allocations', value: '156', change: 'Active Distributions', type: 'info', icon: BarChart3, color: 'bg-sky-50 text-sky-600 border-sky-100/50' },
-        ].map((stat, i) => {
+        {statCards.map((stat, i) => {
           const Icon = stat.icon
           return (
             <div
               key={i}
-              className="bg-white border border-slate-200/80 rounded-2xl p-6 hover:shadow-md hover:border-slate-300/60 transition-all duration-300"
+              className="bg-white border border-slate-200/80 rounded-2xl p-6 hover:shadow-md hover:border-slate-350/60 transition-all duration-300"
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{stat.title}</span>
@@ -33,8 +70,8 @@ export function DashboardPage() {
                 <div className="flex items-center gap-1 mt-2">
                   <span className={`text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-0.5 ${stat.type === 'increase'
                       ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
-                      : stat.type === 'neutral'
-                        ? 'bg-amber-50 text-amber-600 border border-amber-100'
+                      : stat.type === 'decrease'
+                        ? 'bg-rose-50 text-rose-600 border border-rose-100'
                         : 'bg-sky-50 text-sky-600 border border-sky-100'
                     }`}>
                     {stat.type === 'increase' && <ArrowUpRight size={12} />}

@@ -1,8 +1,38 @@
-import { Menu, X } from 'lucide-react'
+import { Menu, X, LogOut } from 'lucide-react'
 import { useLayout } from '../context/LayoutContext'
+import { useAuth } from '../hooks/useAuth'
+import { useNavigate } from 'react-router-dom'
 
 export function Header() {
   const { sidebarOpen, setSidebarOpen } = useLayout()
+  const { profile, logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      navigate('/login')
+    } catch (err) {
+      console.error('Failed to log out:', err)
+    }
+  }
+
+  // Get initials for profile name
+  const getInitials = (name?: string) => {
+    if (!name) return 'U'
+    return name
+      .split(' ')
+      .map((part) => part[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase()
+  }
+
+  // Format roles for visual display
+  const formatRole = (role?: string) => {
+    if (!role) return ''
+    return role.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+  }
 
   return (
     <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-md border-b border-slate-200/80">
@@ -48,13 +78,30 @@ export function Header() {
             <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 border-2 border-white rounded-full"></span>
           </button>
 
+          {/* User profile info & role */}
+          {profile && (
+            <div className="hidden md:flex flex-col items-end text-right">
+              <span className="text-xs font-bold text-slate-800 leading-none">{profile.name}</span>
+              <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider mt-0.5">{formatRole(profile.role)}</span>
+            </div>
+          )}
+
           {/* User avatar */}
-          <button
-            className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-xs shadow-sm hover:shadow-md transition-all"
+          <div
+            className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-50 to-indigo-100 border border-indigo-200/80 flex items-center justify-center text-indigo-650 font-bold text-xs shadow-sm"
             aria-label="User profile"
-            title="Admin User"
+            title={profile?.name || 'User Profile'}
           >
-            AD
+            {getInitials(profile?.name)}
+          </div>
+
+          {/* Logout button */}
+          <button
+            onClick={handleLogout}
+            className="p-2 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-all"
+            title="Log Out"
+          >
+            <LogOut size={18} />
           </button>
         </div>
       </div>
